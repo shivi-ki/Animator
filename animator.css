@@ -1,0 +1,409 @@
+/* All styling for the Animator app. Its code only attaches class names. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Layout: two columns ─────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1a2e;
+  color: #d4c5a0;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+/* Left column: the code editor. */
+.code-col {
+  width: 42%;
+  min-width: 320px;
+  max-width: 720px;
+  flex-shrink: 0;
+  display: flex;
+  border-right: 1px solid #3a3a5e;
+  background: #0f0f1e;
+}
+
+/* The code column stays in the DOM when collapsed, so CodeMirror keeps its
+   state; hiding it gives the right column the full width. */
+.app.code-hidden .code-col { display: none; }
+
+/* A small emoji button (the code pane's collapse toggle, and the playback
+   controls once they exist). */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a4a;
+  color: #d4c5a0;
+  border: 1px solid #4a4a8a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.icon-btn:hover { background: #3a3a5e; }
+
+/* ── Code panel (left column) ───────────────────────────────────────────── */
+
+.code-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #1a1a3e;
+  border-bottom: 1px solid #3a3a5e;
+}
+.code-title {
+  color: #e8d8b0;
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* Wrapper holding the editor. */
+.code-editor-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+/* CodeMirror mount node: grows to fill the panel. */
+.code-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: #0d0d1a;
+}
+.code-editor .cm-editor { width: 100%; height: 100%; }
+
+/* Collapsible reference of the built-ins available to draw functions. */
+.reference {
+  margin: 8px 14px 0;
+  border: 1px solid #3a3a5e;
+  border-radius: 4px;
+  background: #0d0d1a;
+  overflow: hidden;
+}
+.reference-summary {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #b8a888;
+  font-family: monospace;
+  font-size: 12px;
+  user-select: none;
+}
+.reference-summary:hover { color: #e8d8b0; }
+.reference-body {
+  padding: 4px 12px 10px;
+  border-top: 1px solid #3a3a5e;
+}
+.reference-group { margin-top: 8px; }
+.reference-group-title {
+  color: #8a8aca;
+  font-family: monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.reference-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 1px 0;
+}
+.reference-sig {
+  color: #89ddff;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+.reference-desc { color: #6a7a8a; font-size: 11px; }
+
+/* ── Animation area (right column) ──────────────────────────────────────── */
+
+.canvas-area {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a14;
+  container-type: size;
+}
+
+/* The interpreter's List(Path) (or its error), shown as text before the
+   animation pane is built. */
+.output {
+  align-self: stretch;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cfe3ff;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Leave room for the reveal button, which only overlays this pane while the
+   code column is hidden. */
+.app.code-hidden .output { padding-top: 48px; }
+
+/* Button that reveals the code column again when it is hidden. */
+.reveal-code {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+/* A centred square that fits the (possibly non-square) animation area. Give your
+   <canvas> this class, so that drawings aren't stretched. */
+.canvas {
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+}
+
+body { background: #02030a; color: #ffd9a0; }
+
+/* Deep-space backdrop with a few stars. It goes on the wrapper, not the canvas,
+   so the glow filter below doesn't outline the rectangle. */
+.canvas-area {
+  position: relative;
+  background:
+    linear-gradient(rgba(91, 157, 231, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 157, 231, 0.13) 1px, transparent 1px),
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 20%, #ffe9a8, transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 65%, #fff, transparent),
+    radial-gradient(ellipse at center, #0b0720 0%, #02030a 75%);
+  background-size:
+    min(4cqw, 4cqh) min(4cqw, 4cqh),
+    min(4cqw, 4cqh) min(4cqw, 4cqh),
+    auto, auto, auto, auto, auto;
+}
+
+/* Dynamic, canvas-rendered grid layer; the drawing canvas stays transparent above it. */
+.space-grid {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Solar glow: stacked drop-shadows from white-hot to red. */
+.canvas {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 3px #fff3c4) drop-shadow(0 0 10px #ffb347)
+    drop-shadow(0 0 28px #ff5a1f);
+}
+
+/* Error banner: full width, fixed to the top, 75% opaque red. */
+.error-banner {
+  position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box;
+  display: flex; align-items: flex-start; gap: 16px; padding: 12px 20px;
+  background: rgba(255, 0, 0, 0.75);
+  color: #fff; font-family: "Times New Roman", Times, serif; font-size: 18px;
+  z-index: 1000;
+}
+.error-x { background: none; border: none; padding: 0; cursor: pointer; flex: none; }
+.error-x svg line { stroke: #fff; stroke-width: 3; stroke-linecap: round; }
+.error-x:hover svg line { stroke: #000; }
+.error-msg { margin: 0; font-weight: bold; white-space: pre-wrap; }
+.error-tip { margin: 4px 0 0; font-style: italic; }
+
+/* Bomb-timer clock, overlaid on the top-right of the drawing. */
+.bomb-clock {
+  position: absolute; top: 12px; right: 12px; z-index: 5;
+  display: flex; align-items: center; gap: 16px; padding: 10px 16px;
+  background: #111; border: 3px solid #444; border-radius: 4px;
+  box-shadow: inset 0 0 12px #000, 0 0 0 2px #222;
+}
+.clock-actions {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.clock-playback { display: flex; align-items: center; gap: 6px; }
+.clock-label { font: 11px "Courier New", monospace; color: #777; letter-spacing: 2px; }
+.clock-digits {
+  font: bold 32px "Courier New", monospace; color: #ff2a2a; letter-spacing: 3px;
+  font-variant-numeric: tabular-nums;
+  background: #1a0000; padding: 4px 10px; border: 1px solid #400;
+  text-shadow: 0 0 8px #f00;
+}
+.clock-reset {
+  position: relative; top: -3px;
+  font: bold 14px "Courier New", monospace; letter-spacing: 2px; color: #000;
+  background: #d9a400; border: 2px solid #7a5c00; padding: 8px 14px; cursor: pointer;
+}
+.clock-reset:active { transform: translateY(1px); }
+.clock-icon-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 32px; padding: 0;
+  color: #ffb1a3; background: linear-gradient(145deg, #3b1111, #170707);
+  border: 1px solid rgba(255, 111, 82, 0.72); border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 42, 42, 0.42), inset 0 0 8px rgba(255, 64, 48, 0.2);
+  font: 18px/1 system-ui, sans-serif; cursor: pointer;
+}
+.clock-icon-button:hover {
+  color: #fff3c4; border-color: #ffca83;
+  box-shadow: 0 0 14px rgba(255, 42, 42, 0.7), inset 0 0 10px rgba(255, 113, 48, 0.28);
+}
+.clock-icon-button:active { transform: translateY(1px); }
+
+/* Drawing selection and playback controls, overlaid opposite the clock. */
+.bottom-controls {
+  position: absolute; bottom: 16px; left: 16px; z-index: 5;
+  display: flex; align-items: flex-end; gap: 10px;
+  max-width: calc(100% - 32px);
+}
+.drawing-select-panel {
+  display: flex; flex: 0 0 156px; flex-direction: column; gap: 8px;
+  padding: 12px; background: rgba(9, 18, 35, 0.92);
+  border: 1px solid rgba(115, 177, 255, 0.42); border-radius: 6px;
+  box-shadow: 0 0 18px rgba(67, 144, 255, 0.16), inset 0 0 18px rgba(67, 144, 255, 0.08);
+}
+.drawing-select-label {
+  color: #a9c5e8; font: 11px "Courier New", monospace; letter-spacing: 1.5px;
+}
+.drawing-select {
+  width: 100%; min-width: 0; padding: 8px 26px 8px 9px;
+  color: #d4c5a0; background: #0c1930;
+  border: 1px solid rgba(123, 184, 255, 0.34); border-radius: 4px;
+  box-shadow: 0 0 10px rgba(72, 152, 255, 0.12);
+  font: 12px "Courier New", monospace; cursor: pointer;
+}
+.drawing-select option { color: #d4c5a0; background: #0c1930; }
+.animation-controls {
+  display: flex; flex-direction: column; gap: 10px; padding: 12px 16px;
+  background: rgba(9, 18, 35, 0.92);
+  border: 1px solid rgba(115, 177, 255, 0.42); border-radius: 6px;
+  box-shadow: 0 0 18px rgba(67, 144, 255, 0.16), inset 0 0 18px rgba(67, 144, 255, 0.08);
+}
+.slider-control {
+  display: grid; grid-template-columns: 52px minmax(120px, 220px) 36px;
+  align-items: center; gap: 10px; padding: 7px 9px;
+  background: rgba(31, 56, 88, 0.42);
+  border: 1px solid rgba(123, 184, 255, 0.2); border-radius: 5px;
+  box-shadow: 0 0 12px rgba(72, 152, 255, 0.13), inset 0 0 10px rgba(72, 152, 255, 0.08);
+}
+.slider-label, .slider-value { font: 12px "Courier New", monospace; color: #d4c5a0; }
+.slider-value { text-align: right; }
+.slider-control input {
+  appearance: none;
+  width: 100%; height: 22px; margin: 0;
+  background: transparent; cursor: pointer;
+}
+.slider-control input::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 4px;
+  background: linear-gradient(90deg, #27456c, #6ea8e8);
+  box-shadow: 0 0 7px rgba(96, 169, 255, 0.32);
+}
+.slider-control input::-moz-range-track {
+  height: 4px; border-radius: 4px;
+  background: linear-gradient(90deg, #27456c, #6ea8e8);
+  box-shadow: 0 0 7px rgba(96, 169, 255, 0.32);
+}
+.slider-control input::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px; height: 20px; margin-top: -8px;
+  border: 1px solid rgba(255, 235, 190, 0.9); border-radius: 50%;
+  background:
+    linear-gradient(155deg, transparent 35%, #f5dfad 40%, #fff5d5 47%, #a87945 53%, transparent 59%),
+    radial-gradient(ellipse at 38% 30%, #fff2c4 0%, #e0ad5b 48%, #80542f 100%);
+  box-shadow: 0 0 8px rgba(255, 204, 123, 0.72), 0 0 12px rgba(93, 164, 255, 0.44);
+}
+.slider-control input::-moz-range-thumb {
+  width: 28px; height: 20px;
+  border: 1px solid rgba(255, 235, 190, 0.9); border-radius: 50%;
+  background:
+    linear-gradient(155deg, transparent 35%, #f5dfad 40%, #fff5d5 47%, #a87945 53%, transparent 59%),
+    radial-gradient(ellipse at 38% 30%, #fff2c4 0%, #e0ad5b 48%, #80542f 100%);
+  box-shadow: 0 0 8px rgba(255, 204, 123, 0.72), 0 0 12px rgba(93, 164, 255, 0.44);
+}
+.slider-control input:focus-visible { outline: 1px solid #9ecbff; outline-offset: 4px; }
+
+.black-hole-toggle, .tell-me-which {
+  padding: 8px 10px;
+  color: #b9dcff;
+  background: linear-gradient(145deg, #10243d, #081321);
+  border: 1px solid rgba(123, 184, 255, 0.48);
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(72, 152, 255, 0.17), inset 0 0 10px rgba(72, 152, 255, 0.09);
+  font: 11px "Courier New", monospace;
+  letter-spacing: 0.7px;
+  cursor: pointer;
+}
+.black-hole-toggle:hover, .tell-me-which:hover {
+  border-color: #9ecbff;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(72, 152, 255, 0.32), inset 0 0 12px rgba(72, 152, 255, 0.14);
+}
+.black-hole-toggle.is-active {
+  color: #fff0c2;
+  border-color: rgba(255, 151, 92, 0.72);
+  box-shadow: 0 0 14px rgba(255, 105, 55, 0.24), inset 0 0 10px rgba(255, 105, 55, 0.12);
+}
+.black-hole-controls { min-width: 290px; }
+.black-hole-controls .tell-me-which { align-self: flex-end; }
+
+.classification-banner {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 300px;
+  padding: 10px 14px;
+  background: rgba(0, 155, 72, 0.75);
+  border: 1px solid rgba(147, 255, 190, 0.6);
+  border-radius: 4px;
+  box-shadow: 0 0 16px rgba(44, 255, 130, 0.2);
+  color: #fff;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 16px;
+}
+.classification-check {
+  flex: none;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.classification-check svg line {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.classification-check:hover svg line { stroke: #caffdc; }
+.classification-title {
+  margin: 2px 0 4px;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.classification-name { margin: 0; font-weight: bold; }
